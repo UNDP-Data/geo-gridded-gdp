@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "gridded-gdp"
+dynamic = ["version"]
+description = 'the repository for manipulating gridded GDP for GeoHub.'
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = []
+authors = [
+  { name = "Jin Igarashi", email = "igarashi.jin@water-gis.com" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+  "boto3",
+  "rasterio",
+  "shapely",
+  "pystac",
+  "rio_cogeo",
+  "tqdm"
+]
+
+[project.urls]
+Documentation = "https://github.com/Jin Igarashi/gridded-gdp#readme"
+Issues = "https://github.com/Jin Igarashi/gridded-gdp/issues"
+Source = "https://github.com/Jin Igarashi/gridded-gdp"
+
+[tool.hatch.version]
+path = "src/gridded_gdp/__about__.py"
+
+[tool.hatch.envs.types]
+extra-dependencies = [
+  "mypy>=1.0.0",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/gridded_gdp tests}"
+
+[tool.coverage.run]
+source_pkgs = ["gridded_gdp", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/gridded_gdp/__about__.py",
+]
+
+[tool.coverage.paths]
+gridded_gdp = ["src/gridded_gdp", "*/gridded-gdp/src/gridded_gdp"]
+tests = ["tests", "*/gridded-gdp/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
