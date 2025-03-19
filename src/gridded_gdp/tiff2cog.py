@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 def tiff2cog(
         input_file, output_file, dst_crs = "EPSG:3857",
-        lonmin=-179.9999, latmin=-65, lonmax=179.9999, latmax=75,
+        lonmin=-20037000, latmin=-20048900, lonmax=20037000, latmax=20048900,
         force=False
 ):
     """
@@ -33,19 +33,9 @@ def tiff2cog(
     with rasterio.open(input_file) as src:
         src_crs = src.crs.to_string()
 
-        src_transform = src.transform
-        width = src.width
-        height = src.height
-
-        # compute exact pixel size in target CRS
-        left = src_transform.c
-        top = src_transform.f
-        right = left + width * src_transform.a
-        bottom = top + height * src_transform.e
-        dst_bounds = transform_bounds(src_crs, dst_crs, left, bottom, right, top)
-        res_x = (dst_bounds[2] - dst_bounds[0]) / width
-        target_res = str(res_x)
-
+        # compute resolution by bounds
+        res_x = (lonmax - lonmin) / src.width
+        target_res_x = str(res_x)
 
     cmd = [
         "gdalwarp",
@@ -55,8 +45,9 @@ def tiff2cog(
         "-t_srs", dst_crs,
         "-r", "nearest",
         "-te", str(lonmin), str(latmin), str(lonmax), str(latmax),
-        "-te_srs", "EPSG:4326",
-        "-tr", target_res, target_res,
+        "-te_srs", dst_crs,
+        "-tr", target_res_x, target_res_x,
+        "-tap",
         "-of", "COG",
         "-co", "COMPRESS=ZSTD",
         "-co", "PREDICTOR=2",
@@ -70,7 +61,7 @@ def tiff2cog(
     env = os.environ.copy()
     env["GDAL_CACHEMAX"] = "10240"
 
-    print("Running command:", " ".join(cmd))
+    # print("Running command:", " ".join(cmd))
     subprocess.run(cmd, check=True, env=env)
 
 
@@ -116,8 +107,8 @@ if __name__ == '__main__':
         "/Volumes/Data/gridded-gdp/original/SSP2/"
     ]
     output_path = "/Volumes/Data/gridded-gdp/stac/"
-    process_files(input_folders, output_path, force=False)
+    process_files(input_folders, output_path, force=True)
 
     # input_path = "/Volumes/Data/gridded-gdp/original/GDP_2010-2010/GDP2010.tif"
     # output_path = os.path.join("/Volumes/Data/gridded-gdp/stac/GDP_2010-2010/", os.path.basename(input_path))
-    # tiff2cog(input_path, output_path)
+    # tiff2cog(input_path, output_path, force=True)
